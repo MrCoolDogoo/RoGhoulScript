@@ -29,16 +29,16 @@ local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCool
     },
     Boss = {
         ["Gyakusatsu"] = false,
+        ["Kishou Arima"] = false,
         ["Eto Yoshimura"] = false,
         --["Koutarou Amon"] = false,
-        ["Nishiki Nishio"] = false,
-        ["Touka Kirishima"] = false,
         --["Young Eto"] = false,
-        ["Kishou Arima"] = false
+        ["Touka Kirishima"] = false,
+        ["Nishiki Nishio"] = false
     },
     DistanceFromNpc = 5,
     DistanceFromBoss = 8,
-    TeleportSpeed = 150,
+    TeleportSpeed = 120,
     ReputationFarm = false,
     ReputationCashout = false,
     AutoKickWhitelist = ""
@@ -47,13 +47,12 @@ local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCool
 local array = {
     boss = {
         ["Gyakusatsu"] = 1250,
-        ["Eto Yoshimura"] = 1250,
         ["Kishou Arima"] = 1250,
-        --Temp disabled since Young Eto is janky and idk how to add her
-        --["Koutarou Amon"] = 750,
-        --["Young Eto"] = 750,
-        ["Nishiki Nishio"] = 250,
-        ["Touka Kirishima"] = 250
+        ["Eto Yoshimura"] = 1250,
+        ["Koutarou Amon"] = 750,
+        ["Young Eto"] = 750,
+        ["Touka Kirishima"] = 250,
+        ["Nishiki Nishio"] = 250
     },
 
     npcs = {["Aogiri Members"] = "GhoulSpawns", Investigators = "CCGSpawns", Humans = "HumanSpawns"},
@@ -76,15 +75,15 @@ end)
 
 btn = tab1:AddButton("Start", function()
     if not array.autofarm then
-        --if key then
+        if key then
             btn.Text, array.autofarm = "Stop", true
             local farmtick = tick()
             while array.autofarm do
                 labels("tfarm", "Time elapsed: "..os.date("!%H:%M:%S", tick() - farmtick))
                 wait(1)
             end
-        [[else
-            player:Kick("Failed to get the Remote key, please try to execute the script again")]]
+        else
+            player:Kick("Failed to get the Remote key, please try to execute the script again")
         end
     else
         btn.Text, array.autofarm, array.died = "Start", false, false
@@ -265,7 +264,7 @@ tab1:Show()
 
 local function tp(pos)
     if array.died then
-       --player.Character.HumanoidRootPart.CFrame = pos
+        --player.Character.HumanoidRootPart.CFrame = pos
         array.died = false
         return
     end
@@ -368,7 +367,7 @@ local function collect(npc)
 
     player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
 
-    [[ Might be janky here
+    [[
     waitforobj(clickpart, "")
     repeat
         if tick() - timer > 4 then
