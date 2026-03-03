@@ -30,10 +30,10 @@ local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCool
     Boss = {
         ["Gyakusatsu"] = false,
         ["Eto Yoshimura"] = false,
-        ["Koutarou Amon"] = false,
+        --["Koutarou Amon"] = false,
         ["Nishiki Nishio"] = false,
         ["Touka Kirishima"] = false,
-        ["Young Eto"] = false,
+        --["Young Eto"] = false,
         ["Kishou Arima"] = false
     },
     DistanceFromNpc = 5,
@@ -49,11 +49,9 @@ local array = {
         ["Gyakusatsu"] = 1250,
         ["Eto Yoshimura"] = 1250,
         ["Kishou Arima"] = 1250,
-        [[ 
-        Temp disabled since Young Eto is janky and idk how to add her
-        ["Koutarou Amon"] = 750,
-        ["Young Eto"] = 750,
-        ]]
+        --Temp disabled since Young Eto is janky and idk how to add her
+        --["Koutarou Amon"] = 750,
+        --["Young Eto"] = 750,
         ["Nishiki Nishio"] = 250,
         ["Touka Kirishima"] = 250
     },
