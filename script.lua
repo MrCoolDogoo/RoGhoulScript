@@ -60,10 +60,10 @@ local array = {
     stages = {"One", "Two", "Three", "Four", "Five", "Six"},
 
     skills = {
-        E = player.PlayerFolder.Special1CD,
-        F = player.PlayerFolder.Special3CD,
-        C = player.PlayerFolder.SpecialBonusCD,
-        R = player.PlayerFolder.Special2CD
+        E = PlayerFolder.Special1CD,
+        F = PlayerFolder.Special3CD,
+        C = PlayerFolder.SpecialBonusCD,
+        R = PlayerFolder.Special2CD
     }
 }
 
@@ -100,8 +100,8 @@ labels = setmetatable({
     tfarm = {label = tab1:AddLabel("")},
     space = {label = tab1:AddLabel("")},
     Quest = {prefix = "Current Quest: ", label = tab1:AddLabel("Current Quest: None")},
-    Yen = {prefix = "Yen: ", label = tab1:AddLabel("Yen: 0"), value = 0, oldval = player.PlayerFolder.Stats.Yen.Value},
-    RC = {prefix = "RC: ", label = tab1:AddLabel("RC: 0"), value = 0, oldval = player.PlayerFolder.Stats.RC.Value},
+    Yen = {prefix = "Yen: ", label = tab1:AddLabel("Yen: 0"), value = 0, oldval = PlayerFolder.Stats.Yen.Value},
+    RC = {prefix = "RC: ", label = tab1:AddLabel("RC: 0"), value = 0, oldval = PlayerFolder.Stats.RC.Value},
     Kills = {prefix = "Kills: ", label = tab1:AddLabel("Kills: 0"), value = 0} 
 }, {
     __call = function (self, typ, newv, oldv)
@@ -167,15 +167,15 @@ tab2:AddSlider("Distance from Bosses", function(x)
     myData.DistanceFromBoss = x * -1
 end, {min = 0, max = 15}):Set(55)
 
-labels.p = {label = tab3:AddLabel("Current trainer: "..player.PlayerFolder.Trainers[team.."Trainer"].Value)}
+labels.p = {label = tab3:AddLabel("Current trainer: "..PlayerFolder.Trainers[team.."Trainer"].Value)}
 
 local progress = tab3:AddSlider("Progress", nil, {min = 0, max = 100, readonly = true})
 
-progress:Set(player.PlayerFolder.Trainers[player.PlayerFolder.Trainers[team.."Trainer"].Value].Progress.Value)
+progress:Set(PlayerFolder.Trainers[PlayerFolder.Trainers[team.."Trainer"].Value].Progress.Value)
 
-player.PlayerFolder.Trainers[team.."Trainer"].Changed:connect(function()
-    labels("p", "Current trainer: "..player.PlayerFolder.Trainers[team.."Trainer"].Value)
-    progress:Set(player.PlayerFolder.Trainers[player.PlayerFolder.Trainers[team.."Trainer"].Value].Progress.Value)
+PlayerFolder.Trainers[team.."Trainer"].Changed:connect(function()
+    labels("p", "Current trainer: "..PlayerFolder.Trainers[team.."Trainer"].Value)
+    progress:Set(PlayerFolder.Trainers[PlayerFolder.Trainers[team.."Trainer"].Value].Progress.Value)
 end)
 
 btn2 = tab3:AddButton("Start", function()
@@ -190,7 +190,7 @@ btn2 = tab3:AddButton("Start", function()
             
             local tkey, result
 
-            connection = player.Backpack.DescendantAdded:Connect(function(obj)
+            connection = Backpack.DescendantAdded:Connect(function(obj)
                 if tostring(obj) == "TSCodeVal" and obj:IsA("StringValue") then
                     tkey = obj.Value
                 end
@@ -207,8 +207,8 @@ btn2 = tab3:AddButton("Start", function()
                 end
             elseif result == "TRAINING COMPLETE" then
                 labels("time", "Switching to other trainer...")
-                for i,v in pairs(player.PlayerFolder.Trainers:GetDescendants()) do
-                    if table.find(trainers, v.Name) and findobj(v, "Progress") and tonumber(v.Progress.Value) < 100 and tonumber(player.PlayerFolder.Trainers[player.PlayerFolder.Trainers[team.."Trainer"].Value].Progress.Value) == 100 then
+                for i,v in pairs(PlayerFolder.Trainers:GetDescendants()) do
+                    if table.find(trainers, v.Name) and findobj(v, "Progress") and tonumber(v.Progress.Value) < 100 and tonumber(PlayerFolder.Trainers[PlayerFolder.Trainers[team.."Trainer"].Value].Progress.Value) == 100 then
                         invoke(remotes.Trainers.ChangeTrainer, v.Name)
                         wait(1.5)
                     end
@@ -505,9 +505,9 @@ while true do
                                         pressKey(x)
                                     end
                                 end
-                                player.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) --+ Vector3.new(0,myData.DistanceFromBoss ,0)
+                                tp(npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) + Vector3.new(0,myData.DistanceFromBoss ,0))
                             else
-                                player.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame --+ npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc 
+                                tp(npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc)
                             end
                             if player.PlayerFolder.CanAct.Value then
                                 pressKey("Mouse1")
