@@ -263,11 +263,11 @@ for i,v in pairs(array.npcs) do drop:Add(i) end
 tab1:Show()
 
 local function tp(pos)
-    if array.died then
+    [[if array.died then
+        player.Character.HumanoidRootPart.CFrame = pos
         array.died = false
-        tp(pos)
         return
-    end
+    end]]
 
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
@@ -285,11 +285,11 @@ local function tp(pos)
         completed = true
     end)
 
-    while not completed do
+    [[while not completed do
         if array.found or not array.autofarm or player.Character.Humanoid.Health <= 0 then tween:Cancel() break end
-        --player.Character.HumanoidRootPart.CFrame = val.Value
+        player.Character.HumanoidRootPart.CFrame = val.Value
         task.wait()
-    end
+    end]]
 
     val:Destroy()
 end
