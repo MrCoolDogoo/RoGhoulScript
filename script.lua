@@ -31,7 +31,9 @@ local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/z4gs/s
         ["Gyakusatsu"] = false,
         ["Eto Yoshimura"] = false,
         ["Koutarou Amon"] = false,
-        ["Nishiki Nishio"] = false
+        ["Nishiki Nishio"] = false,
+        ["Young Eto"] = false,
+        ["Kishou Arima"] = false
     },
     DistanceFromNpc = 5,
     DistanceFromBoss = 8,
@@ -45,7 +47,9 @@ local array = {
     boss = {
         ["Gyakusatsu"] = 1250,
         ["Eto Yoshimura"] = 1250,
+        ["Kishou Arima"] = 1250,
         ["Koutarou Amon"] = 750,
+        ["Young Eto"] = 750,
         ["Nishiki Nishio"] = 250
     },
 
