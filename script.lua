@@ -505,9 +505,9 @@ while true do
                                         pressKey(x)
                                     end
                                 end
-                                tp(npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) + Vector3.new(0,myData.DistanceFromBoss ,0))
+                                npc.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) + Vector3.new(0,myData.DistanceFromBoss ,0)
                             else
-                                tp(npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc)
+                                npc.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc
                             end
                             if player.PlayerFolder.CanAct.Value then
                                 pressKey("Mouse1")
