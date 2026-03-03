@@ -49,8 +49,8 @@ local array = {
         ["Gyakusatsu"] = 1250,
         ["Kishou Arima"] = 1250,
         ["Eto Yoshimura"] = 1250,
-        ["Koutarou Amon"] = 750,
-        ["Young Eto"] = 750,
+        -- ["Koutarou Amon"] = 750,
+        -- ["Young Eto"] = 750,
         ["Touka Kirishima"] = 250,
         ["Nishiki Nishio"] = 250
     },
