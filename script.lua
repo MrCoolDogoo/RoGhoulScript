@@ -49,8 +49,11 @@ local array = {
         ["Gyakusatsu"] = 1250,
         ["Eto Yoshimura"] = 1250,
         ["Kishou Arima"] = 1250,
+        [[ 
+        Temp disabled since Young Eto is janky and idk how to add her
         ["Koutarou Amon"] = 750,
         ["Young Eto"] = 750,
+        ]]
         ["Nishiki Nishio"] = 250,
         ["Touka Kirishima"] = 250
     },
@@ -75,7 +78,7 @@ end)
 
 btn = tab1:AddButton("Start", function()
     if not array.autofarm then
-        if key then
+        --if key then
             btn.Text, array.autofarm = "Stop", true
             local farmtick = tick()
             while array.autofarm do
@@ -83,8 +86,8 @@ btn = tab1:AddButton("Start", function()
                 wait(1)
             end
         [[else
-            player:Kick("Failed to get the Remote key, please try to execute the script again")
-        end]]
+            player:Kick("Failed to get the Remote key, please try to execute the script again")]]
+        end
     else
         btn.Text, array.autofarm, array.died = "Start", false, false
     end
@@ -264,7 +267,7 @@ tab1:Show()
 
 local function tp(pos)
     if array.died then
-       player.Character.HumanoidRootPart.CFrame = pos
+       --player.Character.HumanoidRootPart.CFrame = pos
         array.died = false
         return
     end
@@ -367,6 +370,7 @@ local function collect(npc)
 
     player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
 
+    [[ Might be janky here
     waitforobj(clickpart, "")
     repeat
         if tick() - timer > 4 then
@@ -376,6 +380,7 @@ local function collect(npc)
         wait()
         fireclickdetector(clickpart[""], 1)
     until not model.Parent.Parent or not findobj(model, "ClickPart") or not array.autofarm or player.Character.Humanoid.Health <= 0
+    ]]
 end
 
 local function pressKey(topress)
