@@ -83,7 +83,7 @@ btn = tab1:AddButton("Start", function()
                 wait(1)
             end
         else
-            player:Kick("Failed to get the Remote key, please try to execute the script again")
+            [[player:Kick("Failed to get the Remote key, please try to execute the script again")]]
         end
     else
         btn.Text, array.autofarm, array.died = "Start", false, false
@@ -263,11 +263,11 @@ for i,v in pairs(array.npcs) do drop:Add(i) end
 tab1:Show()
 
 local function tp(pos)
-    if array.died then
+    [[if array.died then
        player.Character.HumanoidRootPart.CFrame = pos
         array.died = false
         return
-    end
+    end]]
 
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
