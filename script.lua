@@ -375,8 +375,8 @@ local function collect(npc)
         player.Character.Humanoid:MoveTo(clickpart.Position)
         wait()
         fireclickdetector(clickpart[""], 1)
-    until not model.Parent.Parent or not findobj(model, "ClickPart") or not array.autofarm or player.Character.Humanoid.Health <= 0
-end]]
+    until not model.Parent.Parent or not findobj(model, "ClickPart") or not array.autofarm or player.Character.Humanoid.Health <= 0]]
+end
 
 local function pressKey(topress)
     fire(player.Character.Remotes.KeyEvent, key, topress, "Down", player:GetMouse().Hit, nil, workspace.Camera.CFrame)
