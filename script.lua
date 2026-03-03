@@ -285,11 +285,11 @@ local function tp(pos)
         completed = true
     end)
 
-    [[while not completed do
+    while not completed do
         if array.found or not array.autofarm or player.Character.Humanoid.Health <= 0 then tween:Cancel() break end
-        player.Character.HumanoidRootPart.CFrame = val.Value
+        --player.Character.HumanoidRootPart.CFrame = val.Value
         task.wait()
-    end]]
+    end
 
     val:Destroy()
 end
