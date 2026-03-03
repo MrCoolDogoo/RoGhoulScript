@@ -505,7 +505,7 @@ while true do
                                         pressKey(x)
                                     end
                                 end
-                                player.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) + Vector3.new(0,myData.DistanceFromBoss ,0)
+                                tp(npc.HumanoidRootPart.CFrame + Vector3.new(0,myData.DistanceFromBoss ,0))
                             else
                                 player.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc
                             end
