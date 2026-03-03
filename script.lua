@@ -82,9 +82,9 @@ btn = tab1:AddButton("Start", function()
                 labels("tfarm", "Time elapsed: "..os.date("!%H:%M:%S", tick() - farmtick))
                 wait(1)
             end
-        else
-            [[player:Kick("Failed to get the Remote key, please try to execute the script again")]]
-        end
+        [[else
+            player:Kick("Failed to get the Remote key, please try to execute the script again")
+        end]]
     else
         btn.Text, array.autofarm, array.died = "Start", false, false
     end
