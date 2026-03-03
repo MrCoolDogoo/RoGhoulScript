@@ -263,11 +263,11 @@ for i,v in pairs(array.npcs) do drop:Add(i) end
 tab1:Show()
 
 local function tp(pos)
-    [[if array.died then
-        player.Character.HumanoidRootPart.CFrame = pos
+    if array.died then
+        --player.Character.HumanoidRootPart.CFrame = pos
         array.died = false
         return
-    end]]
+    end
 
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
