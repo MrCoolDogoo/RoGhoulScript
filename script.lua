@@ -264,7 +264,7 @@ tab1:Show()
 
 local function tp(pos)
     if array.died then
-       [[ player.Character.HumanoidRootPart.CFrame = pos ]]
+       player.Character.HumanoidRootPart.CFrame = pos
         array.died = false
         return
     end
