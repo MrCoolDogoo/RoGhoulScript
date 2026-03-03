@@ -361,7 +361,7 @@ local function getQuest(typ)
 end
 
 local function collect(npc)
-    local timer = tick()
+    [[local timer = tick()
     local model = waitforobj(npc, npc.Name.." Corpse", 2)
     local clickpart = waitforobj(model, "ClickPart", 2)
 
@@ -376,7 +376,7 @@ local function collect(npc)
         wait()
         fireclickdetector(clickpart[""], 1)
     until not model.Parent.Parent or not findobj(model, "ClickPart") or not array.autofarm or player.Character.Humanoid.Health <= 0
-end
+end]]
 
 local function pressKey(topress)
     fire(player.Character.Remotes.KeyEvent, key, topress, "Down", player:GetMouse().Hit, nil, workspace.Camera.CFrame)
