@@ -262,7 +262,7 @@ for i,v in pairs(array.npcs) do drop:Add(i) end
 
 tab1:Show()
 
-local function tp(pos)
+[[local function tp(pos)
     if array.died then
         player.Character.HumanoidRootPart.CFrame = pos
         array.died = false
@@ -292,7 +292,7 @@ local function tp(pos)
     end
 
     val:Destroy()
-end
+end]]
 
 local function getNPC()
     local nearestnpc, nearest = nil, math.huge
