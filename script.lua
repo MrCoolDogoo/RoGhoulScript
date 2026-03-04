@@ -358,11 +358,11 @@ local function getQuest(typ)
 end
 
 local function collect(npc)
-    [[local timer = tick()
+    local timer = tick()
     local model = waitforobj(npc, npc.Name.." Corpse", 2)
     local clickpart = waitforobj(model, "ClickPart", 2)
 
-    player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
+    [[player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
 
     waitforobj(clickpart, "")
     repeat
