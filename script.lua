@@ -475,12 +475,7 @@ while true do
                     end)()
 
                     labels("text", "Moving to: "..npc.Name)
-
-                    if myData.Boss[npc.Name] or npc.Parent.Name == "GyakusatsuSpawn" then
-                        tp(npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) + Vector3.new(0,myData.DistanceFromBoss,0))
-                    else
                         tp(npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc)
-                    end
 
                     labels("text", "Killing: "..npc.Name)
                     
