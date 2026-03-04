@@ -501,8 +501,10 @@ while true do
                                     end
                                 end
                                 player.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) + Vector3.new(0,-1*myData.DistanceFromBoss ,0)
+                                print(player.Character.HumanoidRootPart.CFrame)
                             else
                                 player.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc * -1
+                                print(player.Character.HumanoidRootPart.CFrame)
                             end
                             if player.PlayerFolder.CanAct.Value then
                                 pressKey("Mouse1")
