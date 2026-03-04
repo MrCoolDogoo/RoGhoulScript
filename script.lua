@@ -482,6 +482,7 @@ while true do
                     reached = true
 
                     if not array.found then
+                        print("Entered fighting mode")
                         while findobj(findobj(npc.Parent, npc.Name), "Head") and player.Character.Humanoid.Health > 0 and array.autofarm do
                             if not findobj(player.Character, "Kagune") and not findobj(player.Character, "Quinque")  then
                                 pressKey(array.stage)
@@ -499,6 +500,7 @@ while true do
                                 collect(npc)
                             end
                         end
+                        print("Exited fighting mode")
                     end
                 else
                     labels("text", "Target not found, waiting...")
