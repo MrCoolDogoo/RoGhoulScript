@@ -263,6 +263,12 @@ for i,v in pairs(array.npcs) do drop:Add(i) end
 tab1:Show()
 
 local function tp(pos)
+    [[if array.died then
+        player.Character.HumanoidRootPart.CFrame = pos
+        array.died = false
+        return
+    end]]
+
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
 
@@ -355,11 +361,11 @@ local function getQuest(typ)
 end
 
 local function collect(npc)
-    local timer = tick()
+    [[local timer = tick()
     local model = waitforobj(npc, npc.Name.." Corpse", 2)
     local clickpart = waitforobj(model, "ClickPart", 2)
 
-    [[player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
+    player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
 
     waitforobj(clickpart, "")
     repeat
@@ -475,6 +481,7 @@ while true do
                     end)()
 
                     labels("text", "Moving to: "..npc.Name)
+                        
                         tp(npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc)
 
                     labels("text", "Killing: "..npc.Name)
@@ -482,20 +489,17 @@ while true do
                     reached = true
 
                     if not array.found then
-                        print("Entered fighting mode")
-                        while findobj(findobj(npc.Parent, npc.Name), "Head") and player.Character.Humanoid.Health > 0 [[and array.autofarm]] do
-                            print("Entered while loop")
+                        while findobj(findobj(npc.Parent, npc.Name), "Head") and player.Character.Humanoid.Health > 0 and array.autofarm do
                             if not findobj(player.Character, "Kagune") and not findobj(player.Character, "Quinque")  then
                                 pressKey(array.stage)
                             end
-                                print("TP-ing to npc")
-                                player.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc
+                                player.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc 
                             if player.PlayerFolder.CanAct.Value then
-                                print("Attacking")
                                 pressKey("Mouse1")
                             end
                             task.wait()
                         end
+
                         if array.autofarm and player.Character.Humanoid.Health > 0 then
                             labels("Kills", 1)
                             if npc.Name ~= "Eto Yoshimura" and not findobj(npc.Parent, "Gyakusatsu") and npc.Name ~= "Gyakusatsu" then  
@@ -503,7 +507,6 @@ while true do
                                 collect(npc)
                             end
                         end
-                        print("Exited fighting mode")
                     end
                 else
                     labels("text", "Target not found, waiting...")
