@@ -1,4 +1,4 @@
-local gui = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/MrCoolDogoo/RoGhoulScript/refs/heads/main/GUIStuff.lua"))():AddWindow("Ro-Ghoul", {
+local gui = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/z4gs/scripts/master/testtttt.lua"))():AddWindow("Ro-Ghoul", {
     main_color = Color3.fromRGB(0,0,0),
     min_size = Vector2.new(373, 340),
     can_resize = false
@@ -20,7 +20,7 @@ repeat wait() until player:FindFirstChild("PlayerFolder")
 local team, remotes, stat = player.PlayerFolder.Customization.Team.Value, get.ReplicatedStorage.Remotes, player.PlayerFolder.StatsFunction
 local oldtick, farmtick = 0, 0
 local camera = workspace.CurrentCamera
-local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCoolDogoo/RoGhoulScript/refs/heads/main/Settings.lua"))()("Ro-Ghoul Autofarm", {
+local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/z4gs/scripts/master/Settings.lua"))()("Ro-Ghoul Autofarm", {
     Skills = {
         E = false,
         F = false,
@@ -28,17 +28,14 @@ local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCool
         R = false
     },
     Boss = {
-        --["Gyakusatsu"] = false,
-        ["Kishou Arima"] = false,
+        ["Gyakusatsu"] = false,
         ["Eto Yoshimura"] = false,
-        --["Koutarou Amon"] = false,
-        --["Young Eto"] = false,
-        ["Touka Kirishima"] = false,
+        ["Koutarou Amon"] = false,
         ["Nishiki Nishio"] = false
     },
     DistanceFromNpc = 5,
     DistanceFromBoss = 8,
-    TeleportSpeed = 120,
+    TeleportSpeed = 150,
     ReputationFarm = false,
     ReputationCashout = false,
     AutoKickWhitelist = ""
@@ -46,12 +43,9 @@ local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCool
 
 local array = {
     boss = {
-        --["Gyakusatsu"] = 1250,
-        ["Kishou Arima"] = 1250,
+        ["Gyakusatsu"] = 1250,
         ["Eto Yoshimura"] = 1250,
-        -- ["Koutarou Amon"] = 750,
-        -- ["Young Eto"] = 750,
-        ["Touka Kirishima"] = 250,
+        ["Koutarou Amon"] = 750,
         ["Nishiki Nishio"] = 250
     },
 
@@ -264,7 +258,7 @@ tab1:Show()
 
 local function tp(pos)
     if array.died then
-        --player.Character.HumanoidRootPart.CFrame = pos
+        player.Character.HumanoidRootPart.CFrame = pos
         array.died = false
         return
     end
@@ -365,7 +359,7 @@ local function collect(npc)
     local model = waitforobj(npc, npc.Name.." Corpse", 2)
     local clickpart = waitforobj(model, "ClickPart", 2)
 
-    [[player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
+    player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
 
     waitforobj(clickpart, "")
     repeat
@@ -375,7 +369,7 @@ local function collect(npc)
         player.Character.Humanoid:MoveTo(clickpart.Position)
         wait()
         fireclickdetector(clickpart[""], 1)
-    until not model.Parent.Parent or not findobj(model, "ClickPart") or not array.autofarm or player.Character.Humanoid.Health <= 0]]
+    until not model.Parent.Parent or not findobj(model, "ClickPart") or not array.autofarm or player.Character.Humanoid.Health <= 0
 end
 
 local function pressKey(topress)
@@ -503,9 +497,9 @@ while true do
                                         pressKey(x)
                                     end
                                 end
-                                tp(npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) + Vector3.new(0,myData.DistanceFromBoss,0))
+                                player.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) + Vector3.new(0,myData.DistanceFromBoss ,0)
                             else
-                                tp(npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc)
+                                player.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc 
                             end
                             if player.PlayerFolder.CanAct.Value then
                                 pressKey("Mouse1")
