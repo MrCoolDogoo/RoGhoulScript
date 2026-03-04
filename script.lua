@@ -37,7 +37,7 @@ local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCool
         ["Nishiki Nishio"] = false
     },
     DistanceFromNpc = 5,
-    DistanceFromBoss = 10,
+    DistanceFromBoss = 8,
     TeleportSpeed = 120,
     ReputationFarm = false,
     ReputationCashout = false,
@@ -263,12 +263,6 @@ for i,v in pairs(array.npcs) do drop:Add(i) end
 tab1:Show()
 
 local function tp(pos)
-    if array.died then
-        --player.Character.HumanoidRootPart.CFrame = pos
-        array.died = false
-        return
-    end
-
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
 
