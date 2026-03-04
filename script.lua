@@ -20,7 +20,7 @@ repeat wait() until player:FindFirstChild("PlayerFolder")
 local team, remotes, stat = player.PlayerFolder.Customization.Team.Value, get.ReplicatedStorage.Remotes, player.PlayerFolder.StatsFunction
 local oldtick, farmtick = 0, 0
 local camera = workspace.CurrentCamera
-local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCoolDogoo/RoGhoulScript/refs/heads/main/Settings.lua"))()("Ro-Ghoul Autofarm", {
+local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCoolDogoo/RoGhoulScript/refs/heads/main/Settings.lua"))()("script", {
     Skills = {
         E = false,
         F = false,
