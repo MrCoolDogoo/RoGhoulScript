@@ -54,7 +54,7 @@ local array = {
         ["Touka Kirishima"] = 250,
         ["Nishiki Nishio"] = 250
     },
-    npcs = {["Aogiri Members"] = "GhoulSpawns", Investigators = "CCGSpawns", Humans = "HumanSpawns"},
+     npcs = {["Aogiri Members"] = "GhoulSpawns", Investigators = "CCGSpawns", Humans = "HumanSpawns"},
 
     stages = {"One", "Two", "Three", "Four", "Five", "Six"},
 
@@ -262,10 +262,7 @@ for i,v in pairs(array.npcs) do drop:Add(i) end
 tab1:Show()
 
 local function tp(pos)
-    if array.died then
-        array.died = false
-    end
-
+    
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
 
@@ -362,7 +359,7 @@ local function collect(npc)
     local model = waitforobj(npc, npc.Name.." Corpse", 2)
     local clickpart = waitforobj(model, "ClickPart", 2)
 
-    [[player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
+    player.Character.HumanoidRootPart.CFrame = clickpart.CFrame * CFrame.new(0,1.7,0)
 
     waitforobj(clickpart, "")
     repeat
@@ -372,7 +369,7 @@ local function collect(npc)
         player.Character.Humanoid:MoveTo(clickpart.Position)
         wait()
         fireclickdetector(clickpart[""], 1)
-    until not model.Parent.Parent or not findobj(model, "ClickPart") or not array.autofarm or player.Character.Humanoid.Health <= 0]]
+    until not model.Parent.Parent or not findobj(model, "ClickPart") or not array.autofarm or player.Character.Humanoid.Health <= 0
 end
 
 local function pressKey(topress)
@@ -516,10 +513,6 @@ while true do
 
                         if array.autofarm and player.Character.Humanoid.Health > 0 then
                             labels("Kills", 1)
-                            if npc.Name ~= "Eto Yoshimura" and not findobj(npc.Parent, "Gyakusatsu") and npc.Name ~= "Gyakusatsu" then  
-                                labels("text", "Collecting corpse...")
-                                collect(npc)
-                            end
                         end
                     end
                 else
