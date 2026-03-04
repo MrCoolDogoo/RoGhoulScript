@@ -266,7 +266,7 @@ tab1:Show()
 local function tp(pos)
     if array.died then
         array.died = false
-        tp(pos)
+        return
     end
 
     local val = Instance.new("CFrameValue")
