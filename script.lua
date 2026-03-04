@@ -483,7 +483,7 @@ while true do
 
                     if not array.found then
                         print("Entered fighting mode")
-                        while findobj(findobj(npc.Parent, npc.Name), "Head") and player.Character.Humanoid.Health > 0 and array.autofarm do
+                        while [[findobj(findobj(npc.Parent, npc.Name), "Head") and ]]player.Character.Humanoid.Health > 0 and array.autofarm do
                             print("Entered while loop")
                             if not findobj(player.Character, "Kagune") and not findobj(player.Character, "Quinque")  then
                                 pressKey(array.stage)
