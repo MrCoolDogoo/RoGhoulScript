@@ -503,7 +503,7 @@ while true do
                                 collect(npc)
                             end
                         end
-                        print("Exited fighting mode")
+                        print("Exited fighting mode sasdsadasdsasdsd")
                     end
                 else
                     labels("text", "Target not found, waiting...")
