@@ -37,7 +37,7 @@ local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCool
         ["Nishiki Nishio"] = false
     },
     DistanceFromNpc = 5,
-    DistanceFromBoss = 8,
+    DistanceFromBoss = 10,
     TeleportSpeed = 120,
     ReputationFarm = false,
     ReputationCashout = false,
@@ -263,6 +263,12 @@ for i,v in pairs(array.npcs) do drop:Add(i) end
 tab1:Show()
 
 local function tp(pos)
+    if array.died then
+        --player.Character.HumanoidRootPart.CFrame = pos
+        array.died = false
+        return
+    end
+
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
 
@@ -491,26 +497,12 @@ while true do
                             if not findobj(player.Character, "Kagune") and not findobj(player.Character, "Quinque")  then
                                 pressKey(array.stage)
                             end
-                            if myData.Boss[npc.Name] or npc.Parent.Name == "GyakusatsuSpawn" then 
-                                for x,y in pairs(myData.Skills) do
-                                    if player.PlayerFolder.CanAct.Value and y and array.skills[x].Value ~= "DownTime" then
-                                        pressKey(x)
-                                    end
-                                end
-                                player.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90),0,0) + Vector3.new(0,myData.DistanceFromBoss,0)
-                            else
                                 player.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.lookVector * myData.DistanceFromNpc
-                            end
                             if player.PlayerFolder.CanAct.Value then
                                 pressKey("Mouse1")
                             end
                             task.wait()
                         end
-
-                        if npc.Name == "Gyakusatsu" then
-                            player.Character.Humanoid.Health = 0
-                        end
-
                         if array.autofarm and player.Character.Humanoid.Health > 0 then
                             labels("Kills", 1)
                             if npc.Name ~= "Eto Yoshimura" and not findobj(npc.Parent, "Gyakusatsu") and npc.Name ~= "Gyakusatsu" then  
