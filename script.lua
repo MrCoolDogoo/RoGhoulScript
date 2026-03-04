@@ -1,3 +1,4 @@
+print("Loading Script...")
 local gui = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/MrCoolDogoo/RoGhoulScript/refs/heads/main/GUIStuff.lua"))():AddWindow("Ro-Ghoul", {
     main_color = Color3.fromRGB(0,0,0),
     min_size = Vector2.new(373, 340),
