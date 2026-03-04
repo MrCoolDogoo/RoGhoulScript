@@ -37,7 +37,7 @@ local myData = loadstring(game:HttpGet("https://raw.githubusercontent.com/MrCool
         ["Nishiki Nishio"] = false
     },
     DistanceFromNpc = 5,
-    DistanceFromBoss = 8,
+    DistanceFromBoss = 5,
     TeleportSpeed = 120,
     ReputationFarm = false,
     ReputationCashout = false,
