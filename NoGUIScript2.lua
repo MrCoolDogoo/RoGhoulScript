@@ -2,9 +2,8 @@
 -- Ro-Ghoul Auto Farm (Standalone, No GUI, No Settings)
 -- =====================================================
 
-local player       = game:GetService("Players").LocalPlayer
-local TweenService = game:GetService("TweenService")
-local RunService   = game:GetService("RunService")
+local player     = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
 
 repeat wait() until player:FindFirstChild("PlayerFolder")
 
@@ -15,9 +14,12 @@ local remotes = game:GetService("ReplicatedStorage").Remotes
 -- Config (edit these directly)
 -- =====================================================
 local config = {
-    DistanceFromNpc  = -5,
-    DistanceFromBoss = -5,
+    DistanceFromNpc  = -3,
+    DistanceFromBoss = -3,
     TeleportSpeed    = 150,
+
+    -- How far the player must drift from the boss before forcing a re-snap (studs)
+    BossSnapThreshold = 8,
 
     -- Target NPC type: "GhoulSpawns", "CCGSpawns", or "HumanSpawns"
     TargetSpawn = "GhoulSpawns",
@@ -30,8 +32,8 @@ local config = {
         ["Eto Yoshimura"]   = true,  -- lvl 1250+
         ["Kishou Arima"]    = true,  -- lvl 1250+
         ["Koutarou Amon"]   = true,  -- lvl 750+
-        ["Touka Kirishima"] = true,  -- lvl 250+
         ["Nishiki Nishio"]  = true,  -- lvl 250+
+        ["Touka Kirishima"] = true,  -- lvl 250+
     },
 
     -- Skills to use on bosses (E, F, C, R)
@@ -39,25 +41,6 @@ local config = {
 
     ReputationFarm    = true,
     ReputationCashout = true,
-
-    -- -----------------------------------------------
-    -- Boss targeting
-    -- -----------------------------------------------
-
-    -- Frames ahead to extrapolate boss movement when deciding
-    -- where to snap the player and where to aim skills.
-    -- Raise this (e.g. 8–12) for faster bosses like Arima / Eto.
-    -- Set to 0 to disable prediction entirely.
-    BossPredictFrames = 5,
-
-    -- Force the camera to track the boss every frame.
-    -- This ensures directional skills always fire toward the target
-    -- rather than wherever the camera drifted to.
-    CameraLockBoss = true,
-
-    -- World-space offset from the player's root that the locked
-    -- camera sits at (behind + above).
-    CameraOffset = Vector3.new(0, 8, 12),
 }
 
 -- =====================================================
@@ -72,8 +55,8 @@ local bossMinLevel = {
     ["Eto Yoshimura"]   = 1250,
     ["Kishou Arima"]    = 1250,
     ["Koutarou Amon"]   = 750,
-    ["Touka Kirishima"] = 250,
     ["Nishiki Nishio"]  = 250,
+    ["Touka Kirishima"] = 250,
 }
 
 local skillCDs = {
@@ -84,77 +67,24 @@ local skillCDs = {
 }
 
 -- =====================================================
--- getBossVelocity
--- Safely reads the boss root's linear velocity, with
--- fallbacks across different Roblox API versions.
+-- Helpers
 -- =====================================================
-local function getBossVelocity(root)
-    local ok, vel = pcall(function() return root.AssemblyLinearVelocity end)
-    if ok and vel then return vel end
-    local ok2, vel2 = pcall(function() return root.Velocity end)
-    if ok2 and vel2 then return vel2 end
-    return Vector3.new()
-end
-
--- =====================================================
--- predictBossPos
--- Returns where the boss root is expected to be after
--- BossPredictFrames frames, based on current velocity.
--- =====================================================
-local function predictBossPos(root)
-    local vel = getBossVelocity(root)
-    return root.Position + vel * (config.BossPredictFrames / 60)
-end
-
--- =====================================================
--- pressKey
---   topress – key string ("Mouse1", "E", "F", etc.)
---   aimPos  – optional Vector3; when provided, overrides
---             both the mouse-hit CFrame and the camera
---             look-direction sent to the server so that
---             all skills/attacks aim at that position.
--- =====================================================
-local function pressKey(topress, aimPos)
+local function pressKey(topress)
     if not key then return end
-    local remoteEvent = player.Character
+    local re = player.Character
         and player.Character:FindFirstChild("Remotes")
         and player.Character.Remotes:FindFirstChild("KeyEvent")
-    if not remoteEvent then return end
-
-    local hitCFrame, camCFrame
-    if aimPos then
-        hitCFrame = CFrame.new(aimPos)
-        camCFrame = CFrame.lookAt(workspace.CurrentCamera.CFrame.Position, aimPos)
-    else
-        hitCFrame = player:GetMouse().Hit
-        camCFrame = workspace.Camera.CFrame
+    if re then
+        re:FireServer(key, topress, "Down", player:GetMouse().Hit, nil, workspace.Camera.CFrame)
     end
-
-    remoteEvent:FireServer(key, topress, "Down", hitCFrame, nil, camCFrame)
 end
 
--- =====================================================
--- Camera helpers
--- =====================================================
-local function lockCameraToBoss(predictedPos, playerRootPos)
-    local cam = workspace.CurrentCamera
-    cam.CameraType = Enum.CameraType.Scriptable
-    cam.CFrame = CFrame.lookAt(playerRootPos + config.CameraOffset, predictedPos)
-end
-
-local function restoreCamera()
-    workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
-end
-
--- =====================================================
--- tp – smooth tween teleport
--- =====================================================
 local function tp(pos)
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
 
-    local dist  = (player.Character.HumanoidRootPart.Position - pos.p).magnitude
-    local tween = TweenService:Create(
+    local dist = (player.Character.HumanoidRootPart.Position - pos.p).magnitude
+    local tween = game:GetService("TweenService"):Create(
         val,
         TweenInfo.new(dist / config.TeleportSpeed, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
         { Value = pos }
@@ -177,23 +107,44 @@ local function tp(pos)
 end
 
 -- =====================================================
+-- Boss attack CFrame helper
+-- Places the player directly behind the boss using
+-- LookVector so they always face it correctly.
+-- =====================================================
+local function getBossAttackCFrame(npcRoot)
+    local offset = npcRoot.CFrame.LookVector * config.DistanceFromBoss
+    return CFrame.new(npcRoot.Position + offset)
+        * CFrame.Angles(0, math.atan2(-npcRoot.CFrame.LookVector.X, -npcRoot.CFrame.LookVector.Z), 0)
+end
+
+-- =====================================================
 -- getNPC
 -- =====================================================
 local function getNPC()
-    local nearest, nearestDist = nil, math.huge
+    local nearest, nearestDist         = nil, math.huge
+    local nearestBoss, nearestBossDist = nil, math.huge
+    local playerLevel = tonumber(player.PlayerFolder.Stats.Level.Value) or 0
 
     for _, spawn in pairs(workspace.NPCSpawns:GetChildren()) do
         local npc = spawn:FindFirstChildOfClass("Model")
-        if npc and npc:FindFirstChild("Head") and not npc:FindFirstChild("AC") then
-
-            -- Priority: enabled boss at or above minimum level
-            if config.Boss[npc.Name]
-                and tonumber(player.PlayerFolder.Stats.Level.Value) >= (bossMinLevel[npc.Name] or 0)
+        if npc
+            and npc:FindFirstChild("Head")
+            and npc:FindFirstChild("HumanoidRootPart")
+            and npc:FindFirstChild("Humanoid")
+            and npc.Humanoid.Health > 0
+            and not npc:FindFirstChild("AC")
+        then
+            -- Boss check: pick the nearest alive boss we are levelled for
+            if config.Boss[npc.Name] == true
+                and playerLevel >= (bossMinLevel[npc.Name] or 0)
             then
-                return npc
+                local mag = (npc.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).magnitude
+                if mag < nearestBossDist then
+                    nearestBoss, nearestBossDist = npc, mag
+                end
             end
 
-            -- Fallback: nearest NPC in the chosen spawn category
+            -- Regular NPC check
             if spawn.Name == config.TargetSpawn then
                 local mag = (npc.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).magnitude
                 if mag < nearestDist then
@@ -203,7 +154,8 @@ local function getNPC()
         end
     end
 
-    return nearest
+    -- Always prefer the nearest valid boss over regular NPCs
+    return nearestBoss or nearest
 end
 
 -- =====================================================
@@ -236,9 +188,9 @@ end
 -- Key grabber
 -- =====================================================
 fireclickdetector(workspace.TrainerModel.ClickIndicator.ClickDetector)
-local trainerGui = player.PlayerGui:WaitForChild("TrainersGui")
-trainerGui:WaitForChild("TrainersGuiScript")
-trainerGui:Destroy()
+local gui = player.PlayerGui:WaitForChild("TrainersGui")
+gui:WaitForChild("TrainersGuiScript")
+gui:Destroy()
 
 repeat
     for _, v in pairs(getgc(true)) do
@@ -261,16 +213,6 @@ until key
 -- Disable idle kick
 -- =====================================================
 getconnections(player.Idled)[1]:Disable()
-
--- =====================================================
--- Safety cleanup: restore camera if autofarm is toggled
--- off mid-fight
--- =====================================================
-RunService.Heartbeat:Connect(function()
-    if not autofarm then
-        restoreCamera()
-    end
-end)
 
 -- =====================================================
 -- Track respawns
@@ -303,11 +245,9 @@ while true do
 
             -- Reputation quest handling
             if config.ReputationFarm
-                and (
-                    not player.PlayerFolder.CurrentQuest.Complete:FindFirstChild("Aogiri Member")
+                and (not player.PlayerFolder.CurrentQuest.Complete:FindFirstChild("Aogiri Member")
                     or player.PlayerFolder.CurrentQuest.Complete["Aogiri Member"].Value
-                       == player.PlayerFolder.CurrentQuest.Complete["Aogiri Member"].Max.Value
-                )
+                       == player.PlayerFolder.CurrentQuest.Complete["Aogiri Member"].Max.Value)
             then
                 getQuest(true)
                 return
@@ -324,108 +264,97 @@ while true do
                 return
             end
 
-            local isBoss     = config.Boss[npc.Name] ~= nil and config.Boss[npc.Name] == true
-            local npcChanged = false
+            local isBoss = config.Boss[npc.Name] == true
+            local found  = false
 
-            -- Watch in background in case NPC despawns/dies before we arrive
+            -- Watch in background in case NPC changes (dies, despawns, etc.)
             coroutine.wrap(function()
-                while not npcChanged do
-                    if npc ~= getNPC() then npcChanged = true end
+                while not found do
+                    if npc ~= getNPC() then
+                        found = true
+                    end
                     wait()
                 end
             end)()
 
-            -- -----------------------------------------------------------
-            -- Teleport to initial attack position.
-            -- For bosses: use predictBossPos so the tween destination
-            -- already accounts for the boss's movement during travel.
-            -- -----------------------------------------------------------
+            -- -----------------------------------------------
+            -- Teleport to attack position
+            -- -----------------------------------------------
             if isBoss then
-                local predictedPos = predictBossPos(npc.HumanoidRootPart)
-                local predictedCF  = CFrame.new(predictedPos) * npc.HumanoidRootPart.CFrame.Rotation
-                tp(predictedCF * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, config.DistanceFromBoss, 0))
+                tp(getBossAttackCFrame(npc.HumanoidRootPart))
             else
                 tp(npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.LookVector * config.DistanceFromNpc)
             end
 
-            npcChanged = true -- stop the watcher coroutine
+            found = true -- stop the watcher coroutine
 
-            -- -----------------------------------------------------------
+            -- -----------------------------------------------
+            -- Heartbeat snap: keeps the player glued to the
+            -- boss every frame so knockback can't push them off
+            -- -----------------------------------------------
+            local snapConnection
+            if isBoss then
+                snapConnection = RunService.Heartbeat:Connect(function()
+                    local npcRoot  = npc and npc.Parent and npc:FindFirstChild("HumanoidRootPart")
+                    local charRoot = char and char:FindFirstChild("HumanoidRootPart")
+                    if not npcRoot or not charRoot then return end
+
+                    local target = getBossAttackCFrame(npcRoot)
+                    local drift  = (charRoot.Position - target.p).Magnitude
+
+                    if drift > config.BossSnapThreshold then
+                        charRoot.CFrame = target
+                    end
+                end)
+            end
+
+            -- -----------------------------------------------
             -- Attack loop
-            -- -----------------------------------------------------------
-            while npc.Parent and npc:FindFirstChild("Head") and char.Humanoid.Health > 0 and autofarm do
-
-                -- Re-equip if weapon was knocked off
+            -- -----------------------------------------------
+            while npc.Parent
+                and npc:FindFirstChild("Head")
+                and npc:FindFirstChild("Humanoid")
+                and npc.Humanoid.Health > 0
+                and char.Humanoid.Health > 0
+                and autofarm
+            do
                 if not char:FindFirstChild("Kagune") and not char:FindFirstChild("Quinque") then
                     pressKey(config.Stage)
                 end
 
                 if isBoss then
-                    -- -----------------------------------------------
-                    -- Step 1 – Predict where boss will be next N frames
-                    -- -----------------------------------------------
-                    local predictedPos = predictBossPos(npc.HumanoidRootPart)
-
-                    -- -----------------------------------------------
-                    -- Step 2 – Snap player to predicted boss position.
-                    -- Builds the CFrame from the extrapolated position
-                    -- but preserves the original rotation technique
-                    -- (90° clip-inside) that the base script relies on.
-                    -- -----------------------------------------------
-                    local predictedCF = CFrame.new(predictedPos) * npc.HumanoidRootPart.CFrame.Rotation
-                    char.HumanoidRootPart.CFrame =
-                        predictedCF * CFrame.Angles(math.rad(90), 0, 0)
-                        + Vector3.new(0, config.DistanceFromBoss, 0)
-
-                    -- -----------------------------------------------
-                    -- Step 3 – Lock camera so its look direction points
-                    -- at the boss; this is the direction the server uses
-                    -- when resolving AoE / directional skill hits.
-                    -- -----------------------------------------------
-                    if config.CameraLockBoss then
-                        lockCameraToBoss(predictedPos, char.HumanoidRootPart.Position)
-                    end
-
-                    -- -----------------------------------------------
-                    -- Step 4 – Fire skills with aimPos = predictedPos.
-                    -- pressKey passes predictedPos as both mouse.Hit
-                    -- and the camera look target sent to the server,
-                    -- ensuring directional skills land on the boss.
-                    -- -----------------------------------------------
+                    -- Fire skills if enabled and off cooldown
                     for skillKey, enabled in pairs(config.Skills) do
-                        if enabled
-                            and player.PlayerFolder.CanAct.Value
+                        if enabled and player.PlayerFolder.CanAct.Value
                             and skillCDs[skillKey].Value ~= "DownTime"
                         then
-                            pressKey(skillKey, predictedPos)
+                            pressKey(skillKey)
                         end
                     end
 
-                    -- -----------------------------------------------
-                    -- Step 5 – Basic attack, also aimed at predicted pos
-                    -- -----------------------------------------------
-                    if player.PlayerFolder.CanAct.Value then
-                        pressKey("Mouse1", predictedPos)
+                    -- Hard snap every tick as secondary guarantee alongside Heartbeat
+                    local npcRoot = npc:FindFirstChild("HumanoidRootPart")
+                    if npcRoot then
+                        char.HumanoidRootPart.CFrame = getBossAttackCFrame(npcRoot)
                     end
-
                 else
-                    -- Regular NPC: original behaviour unchanged
                     char.HumanoidRootPart.CFrame =
                         npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.LookVector * config.DistanceFromNpc
+                end
 
-                    if player.PlayerFolder.CanAct.Value then
-                        pressKey("Mouse1")
-                    end
+                if player.PlayerFolder.CanAct.Value then
+                    pressKey("Mouse1")
                 end
 
                 task.wait()
             end
 
-            -- -----------------------------------------------------------
-            -- Post-fight cleanup
-            -- -----------------------------------------------------------
-            if isBoss and config.CameraLockBoss then
-                restoreCamera()
+            -- -----------------------------------------------
+            -- Cleanup after fight ends
+            -- -----------------------------------------------
+            if snapConnection then
+                snapConnection:Disconnect()
+                snapConnection = nil
             end
         end)
     end
