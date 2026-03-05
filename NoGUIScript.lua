@@ -26,16 +26,18 @@ local config = {
     -- Boss farming (set to true to farm, requires minimum level)
     Boss = {
         ["Gyakusatsu"]    = false,  -- lvl 1250+
-        ["Eto Yoshimura"] = false,  -- lvl 1250+
-        ["Koutarou Amon"] = false,  -- lvl 750+
-        ["Nishiki Nishio"]= false,  -- lvl 250+
+        ["Eto Yoshimura"] = true,  -- lvl 1250+
+        ["Kishou Arima"] = true, -- lvl 1250+
+        -- ["Koutarou Amon"] = true,  -- lvl 750+
+        ["Nishiki Nishio"]= true,  -- lvl 250+
+        ["Touka Kirishima"] = true, -- lvl 250+
     },
 
     -- Skills to use on bosses (E, F, C, R)
-    Skills = { E = false, F = false, C = false, R = false },
+    Skills = { E = false, F = true, C = false, R = true },
 
-    ReputationFarm    = false,
-    ReputationCashout = false,
+    ReputationFarm    = true,
+    ReputationCashout = true,
 }
 
 -- =====================================================
@@ -71,12 +73,6 @@ local function pressKey(topress)
 end
 
 local function tp(pos)
-    if died then
-        player.Character.HumanoidRootPart.CFrame = pos
-        died = false
-        return
-    end
-
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
 
