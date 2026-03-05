@@ -157,7 +157,7 @@ local function getQuest(getNew)
 
     tp(npc.HumanoidRootPart.CFrame)
     game:GetService("ReplicatedStorage").Remotes.Ally.AllyInfo:InvokeServer()
-    wait()
+    wait(0.5)
     fireclickdetector(npc.TaskIndicator.ClickDetector)
 
     if autofarm and not died and (npc.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
