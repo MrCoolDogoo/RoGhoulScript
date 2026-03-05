@@ -163,6 +163,7 @@ local function getQuest(getNew)
     if autofarm and not died and (npc.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
         if getNew then
             remotes[npc.Name].Task:InvokeServer()
+            wait(0.5)
             remotes[npc.Name].Task:InvokeServer()
         else
             remotes.ReputationCashOut:InvokeServer()
