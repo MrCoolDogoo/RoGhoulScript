@@ -157,13 +157,13 @@ local function getQuest(getNew)
 
     tp(npc.HumanoidRootPart.CFrame)
     game:GetService("ReplicatedStorage").Remotes.Ally.AllyInfo:InvokeServer()
-    wait(0.5)
+    wait()
     fireclickdetector(npc.TaskIndicator.ClickDetector)
 
     if autofarm and not died and (npc.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
         if getNew then
             remotes[npc.Name].Task:InvokeServer()
-            wait(0.5)
+            wait()
             remotes[npc.Name].Task:InvokeServer()
         else
             remotes.ReputationCashOut:InvokeServer()
