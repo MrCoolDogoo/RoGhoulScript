@@ -6,15 +6,15 @@ local player = game:GetService("Players").LocalPlayer
 
 repeat wait() until player:FindFirstChild("PlayerFolder")
 
-local team      = player.PlayerFolder.Customization.Team.Value
-local remotes   = game:GetService("ReplicatedStorage").Remotes
+local team    = player.PlayerFolder.Customization.Team.Value
+local remotes = game:GetService("ReplicatedStorage").Remotes
 
 -- =====================================================
 -- Config (edit these directly)
 -- =====================================================
 local config = {
     DistanceFromNpc  = -5,
-    DistanceFromBoss = -8,
+    DistanceFromBoss = -5,
     TeleportSpeed    = 150,
 
     -- Target NPC type: "GhoulSpawns", "CCGSpawns", or "HumanSpawns"
@@ -25,12 +25,11 @@ local config = {
 
     -- Boss farming (set to true to farm, requires minimum level)
     Boss = {
-        ["Gyakusatsu"]    = false,  -- lvl 1250+
         ["Eto Yoshimura"] = true,  -- lvl 1250+
         ["Kishou Arima"] = true, -- lvl 1250+
-        -- ["Koutarou Amon"] = true,  -- lvl 750+
-        ["Nishiki Nishio"]= true,  -- lvl 250+
+        ["Koutarou Amon"] = true,  -- lvl 750+
         ["Touka Kirishima"] = true, -- lvl 250+
+        ["Nishiki Nishio"] = true, -- lvl 250+
     },
 
     -- Skills to use on bosses (E, F, C, R)
@@ -39,6 +38,7 @@ local config = {
     ReputationFarm    = true,
     ReputationCashout = true,
 }
+
 -- =====================================================
 -- State
 -- =====================================================
@@ -49,7 +49,9 @@ local oldtick  = 0
 
 local bossMinLevel = {
     ["Eto Yoshimura"] = 1250,
+    ["Kishou Arima"] = 1250,
     ["Koutarou Amon"] = 750,
+    ["Touka Kirishima"] = 250,
     ["Nishiki Nishio"] = 250,
 }
 
@@ -74,11 +76,6 @@ local function pressKey(topress)
 end
 
 local function tp(pos)
-    if died then
-        player.Character.HumanoidRootPart.CFrame = pos
-        died = false
-        return
-    end
 
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
