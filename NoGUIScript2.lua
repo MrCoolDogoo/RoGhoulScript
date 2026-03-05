@@ -15,7 +15,7 @@ local remotes = game:GetService("ReplicatedStorage").Remotes
 -- =====================================================
 local config = {
     DistanceFromNpc  = -3,
-    DistanceFromBoss = -3,
+    DistanceFromBoss = -5,
     TeleportSpeed    = 150,
 
     -- How far the player must drift from the boss before forcing a re-snap (studs)
