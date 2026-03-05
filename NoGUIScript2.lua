@@ -156,13 +156,18 @@ local function getQuest(getNew)
         or  workspace.CCGBuilding.Yoshitoki
 
     tp(npc.HumanoidRootPart.CFrame)
+    wait(0.5) -- wait after teleporting before interacting
+
     game:GetService("ReplicatedStorage").Remotes.Ally.AllyInfo:InvokeServer()
-    wait()
+    wait(0.3)
+
     fireclickdetector(npc.TaskIndicator.ClickDetector)
+    wait(0.5) -- wait for the GUI to open before invoking remotes
 
     if autofarm and not died and (npc.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
         if getNew then
             remotes[npc.Name].Task:InvokeServer()
+            wait(0.3) -- delay between the two task invokes
             remotes[npc.Name].Task:InvokeServer()
         else
             remotes.ReputationCashOut:InvokeServer()
