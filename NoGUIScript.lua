@@ -25,11 +25,11 @@ local config = {
 
     -- Boss farming (set to true to farm, requires minimum level)
     Boss = {
-        ["Eto Yoshimura"] = true,  -- lvl 1250+
-        ["Kishou Arima"] = true, -- lvl 1250+
-        ["Koutarou Amon"] = true,  -- lvl 750+
-        ["Touka Kirishima"] = true, -- lvl 250+
-        ["Nishiki Nishio"] = true, -- lvl 250+
+        ["Eto Yoshimura"]  = true,  -- lvl 1250+
+        ["Kishou Arima"]   = true,  -- lvl 1250+
+        ["Koutarou Amon"]  = true,  -- lvl 750+
+        ["Touka Kirishima"]= true,  -- lvl 250+
+        ["Nishiki Nishio"] = true,  -- lvl 250+
     },
 
     -- Skills to use on bosses (E, F, C, R)
@@ -48,11 +48,17 @@ local key      = nil
 local oldtick  = 0
 
 local bossMinLevel = {
-    ["Eto Yoshimura"] = 1250,
-    ["Kishou Arima"] = 1250,
-    ["Koutarou Amon"] = 750,
-    ["Touka Kirishima"] = 250,
+    ["Eto Yoshimura"]  = 1250,
+    ["Kishou Arima"]   = 1250,
+    ["Koutarou Amon"]  = 750,
+    ["Touka Kirishima"]= 250,
     ["Nishiki Nishio"] = 250,
+}
+
+-- Bosses whose dash/dodge requires frame-perfect Heartbeat freezing
+-- and direct player snapping instead of a fixed offset
+local mobileBosses = {
+    ["Kishou Arima"] = true,
 }
 
 local skillCDs = {
@@ -76,7 +82,6 @@ local function pressKey(topress)
 end
 
 local function tp(pos)
-
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
 
@@ -179,22 +184,50 @@ local function freezeBoss(npc)
     root.CFrame        = frozenCFrame
 
     local active = true
-    coroutine.wrap(function()
-        while active and npc.Parent and humanoid.Health > 0 do
+
+    if mobileBosses[npc.Name] then
+        -- Heartbeat fires every frame, giving the server no window to move the boss
+        -- between corrections — necessary for Arima's dash/dodge behaviour
+        local connection
+        connection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not active or not npc.Parent or humanoid.Health <= 0 then
+                connection:Disconnect()
+                return
+            end
             humanoid.WalkSpeed = 0
             humanoid.JumpPower = 0
             root.Anchored      = true
             root.CFrame        = frozenCFrame
-            task.wait()
-        end
-    end)()
+        end)
 
-    frozenConnections[npc] = function()
-        active = false
-        if npc.Parent then
-            humanoid.WalkSpeed = originalWalkSpeed
-            humanoid.JumpPower = originalJumpPower
-            root.Anchored      = false
+        frozenConnections[npc] = function()
+            active = false
+            connection:Disconnect()
+            if npc.Parent then
+                humanoid.WalkSpeed = originalWalkSpeed
+                humanoid.JumpPower = originalJumpPower
+                root.Anchored      = false
+            end
+        end
+    else
+        -- Standard coroutine loop is sufficient for slower bosses
+        coroutine.wrap(function()
+            while active and npc.Parent and humanoid.Health > 0 do
+                humanoid.WalkSpeed = 0
+                humanoid.JumpPower = 0
+                root.Anchored      = true
+                root.CFrame        = frozenCFrame
+                task.wait()
+            end
+        end)()
+
+        frozenConnections[npc] = function()
+            active = false
+            if npc.Parent then
+                humanoid.WalkSpeed = originalWalkSpeed
+                humanoid.JumpPower = originalJumpPower
+                root.Anchored      = false
+            end
         end
     end
 end
@@ -314,7 +347,16 @@ while true do
 
             -- Teleport to attack position
             if isBoss then
-                tp(npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, config.DistanceFromBoss, 0))
+                if mobileBosses[npc.Name] then
+                    -- Snap directly onto Arima rather than tweening, since he may
+                    -- have already dashed by the time a tween finishes
+                    char.HumanoidRootPart.CFrame = CFrame.new(
+                        npc.HumanoidRootPart.Position,
+                        npc.HumanoidRootPart.Position + npc.HumanoidRootPart.CFrame.LookVector
+                    )
+                else
+                    tp(npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, config.DistanceFromBoss, 0))
+                end
                 freezeBoss(npc)
             else
                 tp(npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.LookVector * config.DistanceFromNpc)
@@ -336,9 +378,19 @@ while true do
                             pressKey(skillKey)
                         end
                     end
-                    char.HumanoidRootPart.CFrame =
-                        npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-                        + Vector3.new(0, config.DistanceFromBoss, 0)
+
+                    if mobileBosses[npc.Name] then
+                        -- Re-snap every frame so any partial server movement
+                        -- doesn't open a gap between player and boss
+                        char.HumanoidRootPart.CFrame = CFrame.new(
+                            npc.HumanoidRootPart.Position,
+                            npc.HumanoidRootPart.Position + npc.HumanoidRootPart.CFrame.LookVector
+                        )
+                    else
+                        char.HumanoidRootPart.CFrame =
+                            npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+                            + Vector3.new(0, config.DistanceFromBoss, 0)
+                    end
                 else
                     char.HumanoidRootPart.CFrame =
                         npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.LookVector * config.DistanceFromNpc
