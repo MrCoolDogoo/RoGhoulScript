@@ -39,19 +39,18 @@ local config = {
     ReputationFarm    = true,
     ReputationCashout = true,
 }
-
 -- =====================================================
 -- State
 -- =====================================================
 local autofarm = false
 local died     = false
 local key      = nil
+local oldtick  = 0
 
 local bossMinLevel = {
-    ["Gyakusatsu"]    = 1250,
     ["Eto Yoshimura"] = 1250,
     ["Koutarou Amon"] = 750,
-    ["Nishiki Nishio"]= 250,
+    ["Nishiki Nishio"] = 250,
 }
 
 local skillCDs = {
@@ -66,13 +65,21 @@ local skillCDs = {
 -- =====================================================
 local function pressKey(topress)
     if not key then return end
-    local re = player.Character and player.Character:FindFirstChild("Remotes") and player.Character.Remotes:FindFirstChild("KeyEvent")
-    if re then
-        re:FireServer(key, topress, "Down", player:GetMouse().Hit, nil, workspace.Camera.CFrame)
+    local remoteEvent = player.Character
+        and player.Character:FindFirstChild("Remotes")
+        and player.Character.Remotes:FindFirstChild("KeyEvent")
+    if remoteEvent then
+        remoteEvent:FireServer(key, topress, "Down", player:GetMouse().Hit, nil, workspace.Camera.CFrame)
     end
 end
 
 local function tp(pos)
+    if died then
+        player.Character.HumanoidRootPart.CFrame = pos
+        died = false
+        return
+    end
+
     local val = Instance.new("CFrameValue")
     val.Value = player.Character.HumanoidRootPart.CFrame
 
@@ -103,21 +110,6 @@ end
 -- getNPC
 -- =====================================================
 local function getNPC()
-    -- Gyakusatsu is handled separately since it has multiple phases
-    if config.Boss["Gyakusatsu"]
-        and tonumber(player.PlayerFolder.Stats.Level.Value) >= bossMinLevel["Gyakusatsu"]
-        and workspace.NPCSpawns.GyakusatsuSpawn:FindFirstChild("Gyakusatsu")
-    then
-        local lowestHP, target = math.huge, nil
-        for _, v in pairs(workspace.NPCSpawns.GyakusatsuSpawn:GetChildren()) do
-            if v.Name ~= "Mob" and v:FindFirstChild("Humanoid") and v.Humanoid.Health < lowestHP then
-                lowestHP = v.Humanoid.Health
-                target = v
-            end
-        end
-        return target or workspace.NPCSpawns.GyakusatsuSpawn.Gyakusatsu
-    end
-
     local nearest, nearestDist = nil, math.huge
 
     for _, spawn in pairs(workspace.NPCSpawns:GetChildren()) do
@@ -147,19 +139,19 @@ end
 -- =====================================================
 -- getQuest
 -- =====================================================
-local oldtick = 0
-
 local function getQuest(getNew)
     local npc = team == "Ghoul"
         and workspace.Anteiku.Yoshimura
         or  workspace.CCGBuilding.Yoshitoki
 
     tp(npc.HumanoidRootPart.CFrame)
-    game:GetService("ReplicatedStorage").Remotes.Ally.AllyInfo:InvokeServer()
+    remotes.Ally.AllyInfo:InvokeServer()
     wait()
     fireclickdetector(npc.TaskIndicator.ClickDetector)
 
-    if autofarm and not died and (npc.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
+    if autofarm and not died
+        and (npc.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 20
+    then
         if getNew then
             remotes[npc.Name].Task:InvokeServer()
             remotes[npc.Name].Task:InvokeServer()
@@ -171,12 +163,59 @@ local function getQuest(getNew)
 end
 
 -- =====================================================
--- Key grabber (needed to fire attacks)
+-- Boss AI Freeze
+-- =====================================================
+local frozenConnections = {}
+
+local function freezeBoss(npc)
+    local humanoid = npc:FindFirstChild("Humanoid")
+    local root     = npc:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root then return end
+
+    local originalWalkSpeed = humanoid.WalkSpeed
+    local originalJumpPower = humanoid.JumpPower
+    local frozenCFrame      = root.CFrame
+
+    humanoid.WalkSpeed = 0
+    humanoid.JumpPower = 0
+    root.Anchored      = true
+    root.CFrame        = frozenCFrame
+
+    local active = true
+    coroutine.wrap(function()
+        while active and npc.Parent and humanoid.Health > 0 do
+            humanoid.WalkSpeed = 0
+            humanoid.JumpPower = 0
+            root.Anchored      = true
+            root.CFrame        = frozenCFrame
+            task.wait()
+        end
+    end)()
+
+    frozenConnections[npc] = function()
+        active = false
+        if npc.Parent then
+            humanoid.WalkSpeed = originalWalkSpeed
+            humanoid.JumpPower = originalJumpPower
+            root.Anchored      = false
+        end
+    end
+end
+
+local function unfreezeBoss(npc)
+    if frozenConnections[npc] then
+        frozenConnections[npc]()
+        frozenConnections[npc] = nil
+    end
+end
+
+-- =====================================================
+-- Key grabber
 -- =====================================================
 fireclickdetector(workspace.TrainerModel.ClickIndicator.ClickDetector)
-local gui = player.PlayerGui:WaitForChild("TrainersGui")
-gui:WaitForChild("TrainersGuiScript")
-gui:Destroy()
+local trainerGui = player.PlayerGui:WaitForChild("TrainersGui")
+trainerGui:WaitForChild("TrainersGuiScript")
+trainerGui:Destroy()
 
 repeat
     for _, v in pairs(getgc(true)) do
@@ -201,13 +240,27 @@ until key
 getconnections(player.Idled)[1]:Disable()
 
 -- =====================================================
--- Auto Farm toggle (set autofarm = true to start)
+-- Safety cleanup: unfreeze all bosses if autofarm stops
 -- =====================================================
-autofarm = true
+game:GetService("RunService").Heartbeat:Connect(function()
+    if not autofarm then
+        for npc in pairs(frozenConnections) do
+            unfreezeBoss(npc)
+        end
+    end
+end)
 
+-- =====================================================
+-- Track respawns
+-- =====================================================
 player.CharacterAdded:Connect(function()
     died = true
 end)
+
+-- =====================================================
+-- Start
+-- =====================================================
+autofarm = true
 
 -- =====================================================
 -- Main loop
@@ -228,9 +281,11 @@ while true do
 
             -- Reputation quest handling
             if config.ReputationFarm
-                and (not player.PlayerFolder.CurrentQuest.Complete:FindFirstChild("Aogiri Member")
+                and (
+                    not player.PlayerFolder.CurrentQuest.Complete:FindFirstChild("Aogiri Member")
                     or player.PlayerFolder.CurrentQuest.Complete["Aogiri Member"].Value
-                       == player.PlayerFolder.CurrentQuest.Complete["Aogiri Member"].Max.Value)
+                       == player.PlayerFolder.CurrentQuest.Complete["Aogiri Member"].Max.Value
+                )
             then
                 getQuest(true)
                 return
@@ -247,28 +302,28 @@ while true do
                 return
             end
 
-            local found = false
+            local isBoss = config.Boss[npc.Name] ~= nil and config.Boss[npc.Name] == true
+            local npcChanged = false
 
-            -- Watch in background in case NPC changes (dies, despawns, etc.)
+            -- Watch in background in case NPC despawns or dies before we arrive
             coroutine.wrap(function()
-                while not found do
+                while not npcChanged do
                     if npc ~= getNPC() then
-                        found = true -- signal to abort current target
+                        npcChanged = true
                     end
                     wait()
                 end
             end)()
 
-            local isBoss = config.Boss[npc.Name] or npc.Parent.Name == "GyakusatsuSpawn"
-
             -- Teleport to attack position
             if isBoss then
                 tp(npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, config.DistanceFromBoss, 0))
+                freezeBoss(npc)
             else
                 tp(npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.LookVector * config.DistanceFromNpc)
             end
 
-            found = true -- stop the watcher now that we've arrived
+            npcChanged = true -- stop the watcher coroutine
 
             -- Attack loop
             while npc.Parent and npc:FindFirstChild("Head") and char.Humanoid.Health > 0 and autofarm do
@@ -277,7 +332,6 @@ while true do
                 end
 
                 if isBoss then
-                    -- Use skills if enabled and off cooldown
                     for skillKey, enabled in pairs(config.Skills) do
                         if enabled and player.PlayerFolder.CanAct.Value
                             and skillCDs[skillKey].Value ~= "DownTime"
@@ -285,11 +339,11 @@ while true do
                             pressKey(skillKey)
                         end
                     end
-                    player.Character.HumanoidRootPart.CFrame =
+                    char.HumanoidRootPart.CFrame =
                         npc.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
                         + Vector3.new(0, config.DistanceFromBoss, 0)
                 else
-                    player.Character.HumanoidRootPart.CFrame =
+                    char.HumanoidRootPart.CFrame =
                         npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.LookVector * config.DistanceFromNpc
                 end
 
@@ -297,12 +351,12 @@ while true do
                     pressKey("Mouse1")
                 end
 
-                -- Gyakusatsu dies by resetting player health
-                if npc.Name == "Gyakusatsu" and not npc:FindFirstChild("Head") then
-                    player.Character.Humanoid.Health = 0
-                end
-
                 task.wait()
+            end
+
+            -- Unfreeze boss once the fight is over
+            if isBoss then
+                unfreezeBoss(npc)
             end
         end)
     end
