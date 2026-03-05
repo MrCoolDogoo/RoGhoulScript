@@ -233,53 +233,6 @@ local function getQuest(getNew)
 end
 
 -- =====================================================
--- Boss AI Freeze
--- =====================================================
-local frozenConnections = {}
-
-local function freezeBoss(npc)
-    local humanoid = npc:FindFirstChild("Humanoid")
-    local root     = npc:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not root then return end
-
-    local originalWalkSpeed = humanoid.WalkSpeed
-    local originalJumpPower = humanoid.JumpPower
-    local frozenCFrame      = root.CFrame
-
-    humanoid.WalkSpeed = 0
-    humanoid.JumpPower = 0
-    root.Anchored      = true
-    root.CFrame        = frozenCFrame
-
-    local active = true
-    coroutine.wrap(function()
-        while active and npc.Parent and humanoid.Health > 0 do
-            humanoid.WalkSpeed = 0
-            humanoid.JumpPower = 0
-            root.Anchored      = true
-            root.CFrame        = frozenCFrame
-            task.wait()
-        end
-    end)()
-
-    frozenConnections[npc] = function()
-        active = false
-        if npc.Parent then
-            humanoid.WalkSpeed = originalWalkSpeed
-            humanoid.JumpPower = originalJumpPower
-            root.Anchored      = false
-        end
-    end
-end
-
-local function unfreezeBoss(npc)
-    if frozenConnections[npc] then
-        frozenConnections[npc]()
-        frozenConnections[npc] = nil
-    end
-end
-
--- =====================================================
 -- Key grabber
 -- =====================================================
 fireclickdetector(workspace.TrainerModel.ClickIndicator.ClickDetector)
@@ -310,14 +263,11 @@ until key
 getconnections(player.Idled)[1]:Disable()
 
 -- =====================================================
--- Safety cleanup: unfreeze all bosses + restore camera
--- whenever autofarm is toggled off mid-fight
+-- Safety cleanup: restore camera if autofarm is toggled
+-- off mid-fight
 -- =====================================================
 RunService.Heartbeat:Connect(function()
     if not autofarm then
-        for npc in pairs(frozenConnections) do
-            unfreezeBoss(npc)
-        end
         restoreCamera()
     end
 end)
@@ -394,7 +344,6 @@ while true do
                 local predictedPos = predictBossPos(npc.HumanoidRootPart)
                 local predictedCF  = CFrame.new(predictedPos) * npc.HumanoidRootPart.CFrame.Rotation
                 tp(predictedCF * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, config.DistanceFromBoss, 0))
-                freezeBoss(npc)
             else
                 tp(npc.HumanoidRootPart.CFrame + npc.HumanoidRootPart.CFrame.LookVector * config.DistanceFromNpc)
             end
@@ -475,11 +424,8 @@ while true do
             -- -----------------------------------------------------------
             -- Post-fight cleanup
             -- -----------------------------------------------------------
-            if isBoss then
-                unfreezeBoss(npc)
-                if config.CameraLockBoss then
-                    restoreCamera()
-                end
+            if isBoss and config.CameraLockBoss then
+                restoreCamera()
             end
         end)
     end
