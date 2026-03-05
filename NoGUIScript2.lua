@@ -14,7 +14,7 @@ local remotes   = game:GetService("ReplicatedStorage").Remotes
 -- =====================================================
 local config = {
     DistanceFromNpc  = -3,
-    DistanceFromBoss = -10,
+    DistanceFromBoss = -8,
     TeleportSpeed    = 150,
 
     -- Target NPC type: "GhoulSpawns", "CCGSpawns", or "HumanSpawns"
