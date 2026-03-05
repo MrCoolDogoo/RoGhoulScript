@@ -19,7 +19,7 @@ local config = {
     TeleportSpeed    = 150,
 
     -- How far the player must drift from the boss before forcing a re-snap (studs)
-    BossSnapThreshold = 8,
+    BossSnapThreshold = 1,
 
     -- Target NPC type: "GhoulSpawns", "CCGSpawns", or "HumanSpawns"
     TargetSpawn = "GhoulSpawns",
