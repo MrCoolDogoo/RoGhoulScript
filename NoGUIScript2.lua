@@ -15,7 +15,7 @@ local remotes = game:GetService("ReplicatedStorage").Remotes
 -- =====================================================
 local config = {
     DistanceFromNpc  = -3,
-    DistanceFromBoss = -5,
+    DistanceFromBoss = -0,
     TeleportSpeed    = 150,
 
     -- How far the player must drift from the boss before forcing a re-snap (studs)
@@ -25,7 +25,7 @@ local config = {
     TargetSpawn = "GhoulSpawns",
 
     -- Kagune/Quinque stage to equip: "One" through "Six"
-    Stage = "One",
+    Stage = "Two",
 
     -- Boss farming (set to true to farm, requires minimum level)
     Boss = {
@@ -37,7 +37,7 @@ local config = {
     },
 
     -- Skills to use on bosses (E, F, C, R)
-    Skills = { E = false, F = true, C = false, R = true },
+    Skills = { E = false, F = false, C = false, R = false },
 
     ReputationFarm    = true,
     ReputationCashout = true,
