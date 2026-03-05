@@ -21,7 +21,7 @@ local config = {
     TargetSpawn = "GhoulSpawns",
 
     -- Kagune/Quinque stage to equip: "One" through "Six"
-    Stage = "Two",
+    Stage = "Five",
 
     -- Boss farming (set to true to farm, requires minimum level)
     Boss = {
